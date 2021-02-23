@@ -36,3 +36,24 @@
     transform: rotate(360deg);
   }
 }
+
+/* Override ----------------  */
+
+body {
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+
+.infoHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.infoHeader p {
+  text-align: right;
+}
+
+.currencyTable th, td{
+  text-align: center !important;
+}
