@@ -1,62 +1,79 @@
-import logo from './logo.svg';
+import axios from "axios";
+import { Row, Col, Space, Table, Card } from "antd";
+import { useEffect } from "react";
 import './App.css';
-import { Table, Row, Col, Space, Card } from 'antd';
-import { Get, withAxios } from 'react-axios';
-import { useEffect } from 'react';
-import axios from 'axios';
-
+ 
 const dataSource = [
-  {
-    key: '1',
-    name: 'Mike',
-    age: 32,
-    address: '10 Downing Street',
-  },
-  {
-    key: '2',
-    name: 'John',
-    age: 42,
-    address: '10 Downing Street',
-  },
-];
-
+      {
+        key: '1',
+        currency: 'CAD',
+        buy: 10,
+        exchangeRate: 50,
+        sell: 100,
+      },
+      {
+        key: '2',
+        currency: 'IDR',
+        buy: 10,
+        exchangeRate: 50,
+        sell: 100,
+      },
+      {
+        key: '3',
+        currency: 'JPY',
+        buy: 10,
+        exchangeRate: 50,
+        sell: 100,
+      },
+      {
+        key: '4',
+        currency: 'CHF',
+        buy: 10,
+        exchangeRate: 50,
+        sell: 100,
+      },
+    ];
+ 
 const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-];
-
+      {
+        title: '',
+        dataIndex: 'currency',
+      },
+      {
+        title: 'WE BUY',
+        dataIndex: 'buy',
+      },
+      {
+        title: 'EXCHANGE RATE',
+        dataIndex: 'exchangeRate',
+      },
+      {
+        title: 'WE SELL',
+        dataIndex: 'sell',
+      },
+    ];
+ 
 const TableApp = () => {
-
   useEffect(() => {
-    axios.get("https://api.exchangeratesapi.io/latest").then((res) => {
-    console.log('res', res.data.base);
-    });
-  }, []);
-
-  return (
+ 
+    (async() => {
+      const result = await axios.get("https://api.exchangeratesapi.io/latest");
+      console.log('result',result);
+      })();
+    }, []);
+ 
+ 
+    return (
     <Row>
       <Col lg={{ span: 12, offset: 2 }}>
         <Space direction="vertical">
-          <Card title="Table Chart Stock" style={{ width: 400 }}>
+          <Card title="Table Chart Stock" style={{ width: 900 }}>
             <Table dataSource={dataSource} columns={columns} />
           </Card>
         </Space>
       </Col>
     </Row>
   );
-}
-
+};
+ 
 export default TableApp;
