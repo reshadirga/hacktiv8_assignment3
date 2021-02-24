@@ -8,10 +8,11 @@ import { string } from 'prop-types';
 
 const TableApp = () => {
 
-  const [baseCurrencySource, setBaseCurrencySource] = useState([]);
+  const [activeBaseCurrency, setActiveBaseCurrency] = useState('EUR');
+  const [baseCurrencyName, setBaseCurrencyName] = useState('EUR');
   const [dateSource, setDateSource] = useState([]);
   const [dataSource, setDataSource] = useState([]);
-  const [baseCurrencyName, setBaseCurrencyName] = useState([]);
+  const [rawDataSource, setRawDataSource] = useState([]);
   const columns = [
     {
       title: '',
@@ -34,7 +35,6 @@ const TableApp = () => {
       key: 'weSell',
     },
   ];
-
   const { Option } = Select;
   const [inputValue, setInputValue] = useState('');
 
@@ -43,14 +43,33 @@ const TableApp = () => {
 
       if (res.status !== 200) return;
       else {
-        setBaseCurrencySource(res.data?.base);
+        let rates = res.data?.rates;
         setDateSource(res.data?.date);
-        setDataSource(setDataToTableFormat(res.data?.rates));
-        setBaseCurrencyName(baseCurrencyNameOptions(res.data?.rates));
+        setRawDataSource(initiatieRawRates(rates));
+        setDataSource(setDataToTableFormat(rates));
+
+        let options = [];
+        for (const key in rates) options.push(
+          <Option value={key}>{key}</Option>
+        )
+        options.push(
+          <Option value='EUR'>EUR</Option>
+        )
+
+        setBaseCurrencyName(
+          <Select defaultValue='EUR' className="select-before" onChange={(value) => {
+            setActiveBaseCurrency(value);
+            setInputValue('');
+            setDataSource(setDataToTableFormat(recalculateRates(value, rates)));
+          }}>
+            {options}
+          </Select>
+        )
       }
 
     });
   }, []);
+
 
   return (
     <Row>
@@ -64,10 +83,12 @@ const TableApp = () => {
               allowClear="true"
               value={inputValue}
               onChange={e => setInputValue(formatNumber(e.target.value))}
+              onPressEnter={e => setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))))}
+              suffix={<p className="inputSuffix"> Press 'Enter' to calculate </p>}
             />
             <div className="infoHeader">
               <Col sm={{ span: 15, offset: 0 }}>
-                <h3>Base currency: {baseCurrencySource}</h3>
+                <h3>Base currency: {activeBaseCurrency} {" "} {inputValue}</h3>
               </Col>
               <Col sm={{ span: 9, offset: 0 }}>
                 <p>Date:{" "}
@@ -86,21 +107,6 @@ const TableApp = () => {
     </Row>
 
   );
-
-}
-const baseCurrencyNameOptions = (dataSource) => {
-
-  let options = [];
-  for (const key in dataSource) options.push(
-    <Option value={key}>{key}</Option>
-  )
-
-  return (
-    <Select defaultValue="IDR" className="select-before">
-      { options }
-    </Select>
-  )
-
 }
 
 const setDataToTableFormat = (rates) => {
@@ -121,6 +127,84 @@ const setDataToTableFormat = (rates) => {
     dataSource.push(readForexObject);
   }
   return dataSource;
+}
+
+const initiatieRawRates = (rates) => {
+  let newRates = { ['EUR']: (1) };
+  let arrNewRates = [];
+
+  arrNewRates.push(rates)
+  arrNewRates.push(newRates);
+
+  newRates = arrNewRates.reduce(function (result, currentObject) {
+    for (var key in currentObject) {
+      if (currentObject.hasOwnProperty(key)) {
+        result[key] = currentObject[key];
+      }
+    }
+    return result;
+  }, {});
+
+  return newRates;
+}
+
+const recalculateRates = (baseCurrency, rates) => {
+
+  let newRates = '';
+  let arrNewRates = [];
+  let activeBaseCurrencyValue = 0;
+
+  for (const key in rates) {
+    if (key == baseCurrency) activeBaseCurrencyValue = rates[key];
+  }
+
+  for (const key in rates) {
+    let value = rates[key];
+    newRates = { [key]: (value / activeBaseCurrencyValue) };
+    arrNewRates.push(newRates);
+  }
+
+  newRates = arrNewRates.reduce(function (result, currentObject) {
+    for (var key in currentObject) {
+      if (currentObject.hasOwnProperty(key)) {
+        result[key] = currentObject[key];
+      }
+    }
+    return result;
+  }, {});
+
+  return newRates;
+}
+
+const calculateBasedOnInput = (multiplier, rates) => {
+
+  let newRates = '';
+  let arrNewRates = [];
+  const arrMultiplier = multiplier.split('');
+  arrMultiplier.map((v,i) => {
+    if (v == ",") arrMultiplier.splice(i,1);
+    return arrMultiplier;
+  })
+
+  for (let i = 1; i < arrMultiplier.length; i++) arrMultiplier[0] += arrMultiplier[i];
+  multiplier = parseFloat(arrMultiplier[0]);
+
+  for (const key in rates) {
+    let value = rates[key];
+    newRates = { [key]: (multiplier * value) };
+    arrNewRates.push(newRates);
+  }
+
+  newRates = arrNewRates.reduce(function (result, currentObject) {
+    for (var key in currentObject) {
+      if (currentObject.hasOwnProperty(key)) {
+        result[key] = currentObject[key];
+      }
+    }
+    return result;
+  }, {});
+
+  return newRates;
 }
 
 const spreadPrice = (exchangeRate) => {

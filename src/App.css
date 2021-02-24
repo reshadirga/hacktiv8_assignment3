@@ -39,9 +39,9 @@
 
 /* Override ----------------  */
 
-body {
+body .infoHeader, .ant-table{
   font-weight: 300;
-  font-size: 1.5rem;
+  font-size: .8rem !important;
 }
 
 .infoHeader {
@@ -70,4 +70,10 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+.inputSuffix {
+  font-size: .7rem;
+  font-weight: 200;
+  margin: 0;
 }
