@@ -41,10 +41,10 @@
 
 body {
   background-color: whitesmoke !important;
-  display: flex !important;
-  justify-content: center !important;
+  display: flex;
+  justify-content: center;
   flex-direction: column;
-  position: relative !important;
+  position: relative;
 }
 
 body .infoHeader, .ant-table, .inputSection, .ant-input{
