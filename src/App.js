@@ -13,6 +13,7 @@ const TableApp = () => {
   const [rawDataSource, setRawDataSource] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [disableInputState, setDisableInputState] = useState(true);
+  const [tableFilters, setTableFilters] = useState([]);
   const { Option } = Select;
   let options = [];
   const columns = [
@@ -20,21 +21,33 @@ const TableApp = () => {
       title: '',
       dataIndex: 'currency',
       key: 'currency',
+      filters: tableFilters,
+      onFilter: (value, record) => record.currency.indexOf(value) === 0,
+      filterMultiple:true,
     },
     {
       title: 'We Buy',
       dataIndex: 'weBuy',
       key: 'weBuy',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.weBuy - b.weBuy,
+      sortDirections: ['descend', 'ascend', 'descend']
     },
     {
       title: 'Exchange Rate',
       dataIndex: 'exchangeRate',
       key: 'exchangeRate',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.exchangeRate - b.exchangeRate,
+      sortDirections: ['descend', 'ascend', 'descend']
     },
     {
       title: 'We Sell',
       dataIndex: 'weSell',
       key: 'weSell',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.weSell - b.weSell,
+      sortDirections: ['descend', 'ascend', 'descend']
     },
   ];
 
@@ -55,9 +68,20 @@ const TableApp = () => {
 
   // Add currency to selection
   useEffect(() => {
-    for (const key in rawDataSource) options.push(
+    
+    const filters = [];
+
+    for (const key in rawDataSource) {
+      options.push(
       <Option value={key}>{key}</Option>
-    )
+      )
+      filters.push(
+        {
+          text: key,
+          value: key,
+        }
+      )
+    }
 
     setBaseCurrency(
       <Select placeholder="Select base currency" className="select-before inputSection" onChange={(value) => {
@@ -66,6 +90,8 @@ const TableApp = () => {
         {options}
       </Select>
     )
+
+    setTableFilters(filters);
 
   }, [rawDataSource]);
 
