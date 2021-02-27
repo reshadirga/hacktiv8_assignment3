@@ -81,9 +81,9 @@ const TableApp = () => {
 
 
   return (
-    <Row>
-      <Col md={{ span: 12, offset: 6 }} className="tableContainer">
-        <Space direction="vertical" className="tableCard">
+    <Row >
+      <Col lg={{ span: 12 }} className="tableContainer">
+        <Space direction="vertical" className="tableCard glass">
           <Card title="Table Chart Stock" className="tableCard">
             <Input
               className="baseCurrencyInput inputSection"
@@ -95,10 +95,10 @@ const TableApp = () => {
               onChange={e => setInputValue(formatNumber(e.target.value))}
             />
             <div className="infoHeader">
-              <Col sm={{ span: 15, offset: 0 }}>
+              <Col className="infoHeaderLeft">
                 <h3>Base currency: {activeBaseCurrency} {" "} {inputValue}</h3>
               </Col>
-              <Col sm={{ span: 9, offset: 0 }}>
+              <Col className="infoHeaderRight">
                 <p>Date:{" "}
                   <Moment parse="YYYY-MM-DD" format="DD MMMM YYYY">
                     {dateSource}
@@ -107,7 +107,7 @@ const TableApp = () => {
               </Col>
             </div>
             <div className="currencyTable">
-              <Table dataSource={dataSource} columns={columns} />
+              <Table dataSource={dataSource} columns={columns} pagination={{ pageSize: 7 }}/>
             </div>
           </Card>
         </Space>

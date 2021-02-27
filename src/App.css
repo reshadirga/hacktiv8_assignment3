@@ -39,15 +39,36 @@
 
 /* Overrides ----------------  */
 
+body {
+  background-color: whitesmoke !important;
+  display: flex !important;
+  justify-content: center !important;
+  flex-direction: column;
+  position: relative !important;
+}
+
 body .infoHeader, .ant-table, .inputSection, .ant-input{
   font-weight: 300;
   font-size: .8rem !important;
+}
+
+.inputSection {
+  margin-bottom: 20px;
 }
 
 .infoHeader {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
+}
+
+.infoHeaderLeft {
+  min-width:calc(15/24) !important;
+}
+
+.infoHeaderRight {
+  min-width:calc(9/24) !important;
 }
 
 .infoHeader p {
@@ -73,25 +94,34 @@ input[type=number] {
 }
 
 .tableContainer {
-  width: 50%;
   margin: auto;
+  width: 100% !important;
 }
 
 .tableCard {
   width: 100%;
-  max-width: 600px;
+  background: none !important;
+  border: none !important;
+}
+
+* .glass {
+  position:relative;
+  box-shadow: 20px 20px 40px rgba(0,0,0,0.2);
+  border-radius: 15px;
+  background-color: rgba(218, 218, 218, 0.5);
+  overflow: hidden;
+  justify-content: center;
+  border-top: 1px solid rgba(225,225,225,0.5);
+  border-left: 1px solid rgba(225,225,225,0.5);
+  backdrop-filter: blur(40px);
+  padding: 20px;
+  align-content: center;
 }
 
 /* Responsive ------ */
 
-@media screen and (max-width:970px) {
-  html, .inputSection {
-    font-size: 80%;
-  }
-}
-
 @media screen and (max-width: 700px) {
   html, .inputSection {
-    font-size: 60%;
+    font-size: 80%;
   }
 }
