@@ -30,7 +30,7 @@ const TableApp = () => {
       dataIndex: 'weBuy',
       key: 'weBuy',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.weBuy - b.weBuy,
+      sorter: (a, b) => a.realValue - b.realValue,
       sortDirections: ['descend', 'ascend', 'descend']
     },
     {
@@ -38,7 +38,7 @@ const TableApp = () => {
       dataIndex: 'exchangeRate',
       key: 'exchangeRate',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.exchangeRate - b.exchangeRate,
+      sorter: (a, b) => a.realValue - b.realValue,
       sortDirections: ['descend', 'ascend', 'descend']
     },
     {
@@ -46,7 +46,7 @@ const TableApp = () => {
       dataIndex: 'weSell',
       key: 'weSell',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => a.weSell - b.weSell,
+      sorter: (a, b) => a.realValue - b.realValue,
       sortDirections: ['descend', 'ascend', 'descend']
     },
   ];
@@ -171,6 +171,7 @@ const setDataToTableFormat = (rates) => {
         weBuy: formatNumber((formatCurrencyRate(value - spreadPrice(value))).toString()),
         exchangeRate: formatNumber((formatCurrencyRate(value)).toString()),
         weSell: formatNumber((formatCurrencyRate(value + spreadPrice(value))).toString()),
+        realValue: value, //for sorting purpose only
       };
     };
     dataSource.push(readForexObject);
