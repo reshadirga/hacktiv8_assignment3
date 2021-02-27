@@ -37,9 +37,9 @@
   }
 }
 
-/* Override ----------------  */
+/* Overrides ----------------  */
 
-body .infoHeader, .ant-table{
+body .infoHeader, .ant-table, .inputSection, .ant-input{
   font-weight: 300;
   font-size: .8rem !important;
 }
@@ -72,8 +72,26 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-.inputSuffix {
-  font-size: .7rem;
-  font-weight: 200;
-  margin: 0;
+.tableContainer {
+  width: 50%;
+  margin: auto;
+}
+
+.tableCard {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Responsive ------ */
+
+@media screen and (max-width:970px) {
+  html, .inputSection {
+    font-size: 80%;
+  }
+}
+
+@media screen and (max-width: 700px) {
+  html, .inputSection {
+    font-size: 60%;
+  }
 }

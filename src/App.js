@@ -58,12 +58,9 @@ const TableApp = () => {
     for (const key in rawDataSource) options.push(
       <Option value={key}>{key}</Option>
     )
-    options.push(
-      <Option value='EUR'>EUR</Option>
-    )
 
     setBaseCurrency(
-      <Select placeholder="Select base currency" className="select-before" onChange={(value) => {
+      <Select placeholder="Select base currency" className="select-before inputSection" onChange={(value) => {
         setActiveBaseCurrency(value); setDisableInputState(false);
       }}>
         {options}
@@ -85,11 +82,11 @@ const TableApp = () => {
 
   return (
     <Row>
-      <Col md={{ span: 12, offset: 6 }}>
-        <Space direction="vertical">
-          <Card title="Table Chart Stock" style={{ width: 600 }}>
+      <Col md={{ span: 12, offset: 6 }} className="tableContainer">
+        <Space direction="vertical" className="tableCard">
+          <Card title="Table Chart Stock" className="tableCard">
             <Input
-              className="baseCurrencyInput"
+              className="baseCurrencyInput inputSection"
               addonBefore={baseCurrency}
               placeholder="Insert case currency value..."
               allowClear="true"
