@@ -1,18 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
-import { Table, Row, Col, Space, Card, Input, Select } from 'antd';
-import { useEffect, useState } from 'react';
+import { Card, Col, Input, Row, Select, Space, Table } from 'antd';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import Moment from 'react-moment';
-import { string } from 'prop-types';
+import './App.css';
 
 const TableApp = () => {
 
-  const [activeBaseCurrency, setActiveBaseCurrency] = useState('EUR');
-  const [baseCurrencyName, setBaseCurrencyName] = useState('EUR');
+  const [activeBaseCurrency, setActiveBaseCurrency] = useState('');
+  const [baseCurrency, setBaseCurrency] = useState('');
   const [dateSource, setDateSource] = useState([]);
   const [dataSource, setDataSource] = useState([]);
   const [rawDataSource, setRawDataSource] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [disableInputState, setDisableInputState] = useState(true);
+  const { Option } = Select;
+  let options = [];
   const columns = [
     {
       title: '',
@@ -35,9 +37,9 @@ const TableApp = () => {
       key: 'weSell',
     },
   ];
-  const { Option } = Select;
-  const [inputValue, setInputValue] = useState('');
 
+
+  // Get data from API
   useEffect(() => {
     axios.get("https://api.exchangeratesapi.io/latest").then((res) => {
 
@@ -46,29 +48,39 @@ const TableApp = () => {
         let rates = res.data?.rates;
         setDateSource(res.data?.date);
         setRawDataSource(initiatieRawRates(rates));
-        setDataSource(setDataToTableFormat(rates));
-
-        let options = [];
-        for (const key in rates) options.push(
-          <Option value={key}>{key}</Option>
-        )
-        options.push(
-          <Option value='EUR'>EUR</Option>
-        )
-
-        setBaseCurrencyName(
-          <Select defaultValue='EUR' className="select-before" onChange={(value) => {
-            setActiveBaseCurrency(value);
-            setInputValue('');
-            setDataSource(setDataToTableFormat(recalculateRates(value, rates)));
-          }}>
-            {options}
-          </Select>
-        )
       }
 
     });
   }, []);
+
+  // Add currency to selection
+  useEffect(() => {
+    for (const key in rawDataSource) options.push(
+      <Option value={key}>{key}</Option>
+    )
+    options.push(
+      <Option value='EUR'>EUR</Option>
+    )
+
+    setBaseCurrency(
+      <Select placeholder="Select base currency" className="select-before" onChange={(value) => {
+        setActiveBaseCurrency(value); setDisableInputState(false);
+      }}>
+        {options}
+      </Select>
+    )
+
+  }, [rawDataSource]);
+
+  // User change: active base currency; then empty input form and enable value input
+  useEffect(() => {
+    setInputValue('');
+  }, [activeBaseCurrency]);
+
+  // User change: base currency value input or active base currency; then recalculate table
+  useEffect(() => {
+    setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))))
+  }, [inputValue, rawDataSource, activeBaseCurrency]);
 
 
   return (
@@ -78,13 +90,12 @@ const TableApp = () => {
           <Card title="Table Chart Stock" style={{ width: 600 }}>
             <Input
               className="baseCurrencyInput"
-              addonBefore={baseCurrencyName}
-              placeholder="Base currency value..."
+              addonBefore={baseCurrency}
+              placeholder="Insert case currency value..."
               allowClear="true"
               value={inputValue}
+              disabled={disableInputState}
               onChange={e => setInputValue(formatNumber(e.target.value))}
-              onPressEnter={e => setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))))}
-              suffix={<p className="inputSuffix"> Press 'Enter' to calculate </p>}
             />
             <div className="infoHeader">
               <Col sm={{ span: 15, offset: 0 }}>
@@ -116,13 +127,28 @@ const setDataToTableFormat = (rates) => {
 
   for (const key in rates) {
     let value = rates[key];
-    let readForexObject =
-    {
-      key: index++,
-      currency: key,
-      weBuy: formatCurrencyRate(value - spreadPrice(value)),
-      exchangeRate: formatCurrencyRate(value),
-      weSell: formatCurrencyRate(value + spreadPrice(value)),
+    let readForexObject = {};
+
+    if (value == "-") {
+      readForexObject =
+      {
+        key: index++,
+        currency: key,
+        weBuy: value,
+        exchangeRate: value,
+        weSell: value,
+      };
+    }
+
+    else {
+      readForexObject =
+      {
+        key: index++,
+        currency: key,
+        weBuy: formatNumber((formatCurrencyRate(value - spreadPrice(value))).toString()),
+        exchangeRate: formatNumber((formatCurrencyRate(value)).toString()),
+        weSell: formatNumber((formatCurrencyRate(value + spreadPrice(value))).toString()),
+      };
     };
     dataSource.push(readForexObject);
   }
@@ -181,19 +207,30 @@ const calculateBasedOnInput = (multiplier, rates) => {
   let newRates = '';
   let arrNewRates = [];
   const arrMultiplier = multiplier.split('');
-  arrMultiplier.map((v,i) => {
-    if (v == ",") arrMultiplier.splice(i,1);
+  arrMultiplier.map((v, i) => {
+    if (v == ",") arrMultiplier.splice(i, 1);
     return arrMultiplier;
   })
 
   for (let i = 1; i < arrMultiplier.length; i++) arrMultiplier[0] += arrMultiplier[i];
   multiplier = parseFloat(arrMultiplier[0]);
 
-  for (const key in rates) {
-    let value = rates[key];
-    newRates = { [key]: (multiplier * value) };
-    arrNewRates.push(newRates);
+  if (!multiplier) {
+    for (const key in rates) {
+      newRates = { [key]: '-' };
+      arrNewRates.push(newRates);
+    }
   }
+
+  else {
+    for (const key in rates) {
+      let value = rates[key];
+      newRates = { [key]: (multiplier * value) };
+      arrNewRates.push(newRates);
+    }
+  }
+
+
 
   newRates = arrNewRates.reduce(function (result, currentObject) {
     for (var key in currentObject) {
