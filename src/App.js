@@ -63,7 +63,6 @@ const TableApp = () => {
         let rates = res.data?.rates;
         setDateSource(res.data?.date);
         setRawDataSource(initiatieRawRates(rates));
-        console.log('onAxios', dataSource)
       }
 
     });
@@ -95,24 +94,19 @@ const TableApp = () => {
     )
 
     setTableFilters(filters);
-    console.log('onAddSelection', dataSource)
 
   }, [rawDataSource]);
 
   // User change: active base currency; then empty input form and enable value input
   useEffect(() => {
     setInputValue('');
-    console.log('onActiveBaseCurrency', dataSource)
   }, [activeBaseCurrency]);
 
   // User change: base currency value input or active base currency; then recalculate table
   
   const debouncedSetDataSource = useCallback(
     _.debounce((inputValue, rawDataSource, activeBaseCurrency) => {
-      setDataSource(
-        setDataToTableFormat(
-          calculateBasedOnInput(inputValue,
-            recalculateRates(activeBaseCurrency, rawDataSource))));
+      setDataSource(newDataSource(rawDataSource, inputValue, activeBaseCurrency));
       setDisplayedInputValue(inputValue);
     }, 500),
     []
@@ -123,10 +117,7 @@ const TableApp = () => {
   }, [inputValue, rawDataSource, activeBaseCurrency]);
 
   useEffect(() => {
-    setDataSource(
-      setDataToTableFormat(
-        calculateBasedOnInput(inputValue,
-          recalculateRates(activeBaseCurrency, rawDataSource))));
+    setDataSource(newDataSource(rawDataSource, inputValue, activeBaseCurrency))
   }, [rawDataSource, activeBaseCurrency]);
 
 
@@ -166,6 +157,14 @@ const TableApp = () => {
     </Row>
 
   );
+}
+
+const newDataSource = (rates, multiplier, baseCurrency) => {
+  const newDatasource = setDataToTableFormat(
+    calculateBasedOnInput(multiplier,
+      recalculateRates(baseCurrency, rates)));
+
+  return newDatasource;
 }
 
 const setDataToTableFormat = (rates) => {
@@ -252,8 +251,6 @@ const recalculateRates = (baseCurrency, rates) => {
 }
 
 const calculateBasedOnInput = (multiplier, rates) => {
-
-  console.log('in CalculateBasedOnInput')
 
   let newRates = '';
   let arrNewRates = [];
