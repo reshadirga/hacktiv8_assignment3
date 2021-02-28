@@ -18,7 +18,6 @@ const TableApp = () => {
   const [displayedInputValue, setDisplayedInputValue] = useState('');
   const { Option } = Select;
   let options = [];
-  const [bypassDebounceForInitialRender, setBypassDebounceForInitialRender] = useState(true);
   const columns = [
     {
       title: '',
@@ -64,6 +63,7 @@ const TableApp = () => {
         let rates = res.data?.rates;
         setDateSource(res.data?.date);
         setRawDataSource(initiatieRawRates(rates));
+        console.log('onAxios', dataSource)
       }
 
     });
@@ -95,16 +95,18 @@ const TableApp = () => {
     )
 
     setTableFilters(filters);
+    console.log('onAddSelection', dataSource)
 
   }, [rawDataSource]);
 
   // User change: active base currency; then empty input form and enable value input
   useEffect(() => {
     setInputValue('');
+    console.log('onActiveBaseCurrency', dataSource)
   }, [activeBaseCurrency]);
 
   // User change: base currency value input or active base currency; then recalculate table
-
+  
   const debouncedSetDataSource = useCallback(
     _.debounce((inputValue, rawDataSource, activeBaseCurrency) => {
       setDataSource(
@@ -112,24 +114,21 @@ const TableApp = () => {
           calculateBasedOnInput(inputValue,
             recalculateRates(activeBaseCurrency, rawDataSource))));
       setDisplayedInputValue(inputValue);
-
     }, 500),
     []
   );
 
   useEffect(() => {
-
-    if (!bypassDebounceForInitialRender) {
-      debouncedSetDataSource(inputValue, rawDataSource, activeBaseCurrency)
-    }
-    else {
-      setDataSource(
-        setDataToTableFormat(
-          calculateBasedOnInput(inputValue,
-            recalculateRates(activeBaseCurrency, rawDataSource))));
-      setBypassDebounceForInitialRender(false);
-    }
+    debouncedSetDataSource(inputValue, rawDataSource, activeBaseCurrency);
   }, [inputValue, rawDataSource, activeBaseCurrency]);
+
+  useEffect(() => {
+    setDataSource(
+      setDataToTableFormat(
+        calculateBasedOnInput(inputValue,
+          recalculateRates(activeBaseCurrency, rawDataSource))));
+  }, [rawDataSource, activeBaseCurrency]);
+
 
 
   return (
@@ -253,6 +252,8 @@ const recalculateRates = (baseCurrency, rates) => {
 }
 
 const calculateBasedOnInput = (multiplier, rates) => {
+
+  console.log('in CalculateBasedOnInput')
 
   let newRates = '';
   let arrNewRates = [];
