@@ -1,6 +1,7 @@
 import { Card, Col, Input, Row, Select, Space, Table } from 'antd';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import _ from 'lodash';
+import { useCallback, useEffect, useState } from 'react';
 import Moment from 'react-moment';
 import './App.css';
 
@@ -14,6 +15,7 @@ const TableApp = () => {
   const [inputValue, setInputValue] = useState('');
   const [disableInputState, setDisableInputState] = useState(true);
   const [tableFilters, setTableFilters] = useState([]);
+  const [displayedInputValue, setDisplayedInputValue] = useState('');
   const { Option } = Select;
   let options = [];
   const columns = [
@@ -23,7 +25,7 @@ const TableApp = () => {
       key: 'currency',
       filters: tableFilters,
       onFilter: (value, record) => record.currency.indexOf(value) === 0,
-      filterMultiple:true,
+      filterMultiple: true,
     },
     {
       title: 'We Buy',
@@ -68,12 +70,12 @@ const TableApp = () => {
 
   // Add currency to selection
   useEffect(() => {
-    
+
     const filters = [];
 
     for (const key in rawDataSource) {
       options.push(
-      <Option value={key}>{key}</Option>
+        <Option value={key}>{key}</Option>
       )
       filters.push(
         {
@@ -101,8 +103,17 @@ const TableApp = () => {
   }, [activeBaseCurrency]);
 
   // User change: base currency value input or active base currency; then recalculate table
+
+  const debouncedSetDataSource = useCallback(
+    _.debounce((inputValue, rawDataSource, activeBaseCurrency) => {
+      setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))));
+      setDisplayedInputValue(inputValue);
+    }, 500),
+    []
+  );
+
   useEffect(() => {
-    setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))))
+    debouncedSetDataSource(inputValue, rawDataSource, activeBaseCurrency)
   }, [inputValue, rawDataSource, activeBaseCurrency]);
 
 
@@ -118,13 +129,13 @@ const TableApp = () => {
               allowClear="true"
               value={inputValue}
               disabled={disableInputState}
-              onChange={e => setInputValue(formatNumber(e.target.value))}
+              onChange={e => setInputValue(formatInputValue(e.target.value))}
             />
             <div className="infoHeader">
-              <Col className="infoHeaderLeft">
-                <h3>Base currency: {activeBaseCurrency} {" "} {inputValue}</h3>
+              <Col >
+                <h3>Base currency: {activeBaseCurrency} {" "} {displayedInputValue}</h3>
               </Col>
-              <Col className="infoHeaderRight">
+              <Col >
                 <p>Date:{" "}
                   <Moment parse="YYYY-MM-DD" format="DD MMMM YYYY">
                     {dateSource}
@@ -133,7 +144,7 @@ const TableApp = () => {
               </Col>
             </div>
             <div className="currencyTable">
-              <Table dataSource={dataSource} columns={columns} pagination={{ pageSize: 7 }}/>
+              <Table dataSource={dataSource} columns={columns} pagination={{ pageSize: 7 }} />
             </div>
           </Card>
         </Space>
@@ -168,9 +179,9 @@ const setDataToTableFormat = (rates) => {
       {
         key: index++,
         currency: key,
-        weBuy: formatNumber((formatCurrencyRate(value - spreadPrice(value))).toString()),
-        exchangeRate: formatNumber((formatCurrencyRate(value)).toString()),
-        weSell: formatNumber((formatCurrencyRate(value + spreadPrice(value))).toString()),
+        weBuy: Intl.NumberFormat('en-UK').format(value - spreadPrice(value)),
+        exchangeRate: Intl.NumberFormat('en-UK').format(value),
+        weSell: Intl.NumberFormat('en-UK').format(value + spreadPrice(value)),
         realValue: value, //for sorting purpose only
       };
     };
@@ -272,12 +283,7 @@ const spreadPrice = (exchangeRate) => {
   return exchangeRate * 0.1;
 }
 
-const formatCurrencyRate = (rates) => {
-  let value = Math.round(rates * 1000) / 1000;
-  return value;
-}
-
-function formatNumber(value) {
+function formatInputValue(value) {
 
   if (checkNumberValidity(value)) return alertInputTypeError(value);
 
