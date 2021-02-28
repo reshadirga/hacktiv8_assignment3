@@ -18,6 +18,7 @@ const TableApp = () => {
   const [displayedInputValue, setDisplayedInputValue] = useState('');
   const { Option } = Select;
   let options = [];
+  const [bypassDebounceForInitialRender, setBypassDebounceForInitialRender] = useState(true);
   const columns = [
     {
       title: '',
@@ -106,14 +107,28 @@ const TableApp = () => {
 
   const debouncedSetDataSource = useCallback(
     _.debounce((inputValue, rawDataSource, activeBaseCurrency) => {
-      setDataSource(setDataToTableFormat(calculateBasedOnInput(inputValue, recalculateRates(activeBaseCurrency, rawDataSource))));
+      setDataSource(
+        setDataToTableFormat(
+          calculateBasedOnInput(inputValue,
+            recalculateRates(activeBaseCurrency, rawDataSource))));
       setDisplayedInputValue(inputValue);
+
     }, 500),
     []
   );
 
   useEffect(() => {
-    debouncedSetDataSource(inputValue, rawDataSource, activeBaseCurrency)
+
+    if (!bypassDebounceForInitialRender) {
+      debouncedSetDataSource(inputValue, rawDataSource, activeBaseCurrency)
+    }
+    else {
+      setDataSource(
+        setDataToTableFormat(
+          calculateBasedOnInput(inputValue,
+            recalculateRates(activeBaseCurrency, rawDataSource))));
+      setBypassDebounceForInitialRender(false);
+    }
   }, [inputValue, rawDataSource, activeBaseCurrency]);
 
 
